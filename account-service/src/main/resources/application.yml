@@ -17,6 +17,38 @@ spring:
         spring.json.trusted.packages: '*'
         spring.json.value.default.type: com.leumas.account.kafka.event.TransactionCreatedEvent
         spring.json.use.type.headers: false
+
   profiles:
     active:
       dev
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      customerFinding:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        ignore-exceptions:
+          - jakarta.persistence.EntityNotFoundException
+  retry:
+    instances:
+      customerFinding:
+        max-attempts: 3
+        wait-duration: 500ms
+        retry-exceptions:
+          - java.net.SocketTimeoutException
+          - feign.RetryableException
+        ignore-exceptions:
+          - jakarta.persistence.EntityNotFoundException
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 1000
+        readTimeout: 2000
+        loggerLevel: basic
