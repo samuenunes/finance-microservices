@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Service
@@ -16,6 +19,7 @@ import java.math.BigDecimal;
 public class AccountTransactionService {
     private final AccountRepository accountRepository;
     private final AccountEventsProducer accountEventsProducer;
+    private final Set<UUID> processedTransactions = ConcurrentHashMap.newKeySet();
 
     private static final String DEPOSIT = "DEPOSIT";
     private static final String WITHDRAWAL = "WITHDRAWAL";
@@ -23,6 +27,8 @@ public class AccountTransactionService {
 
     @Transactional
     public void processTransaction(TransactionPayload payload) {
+
+        if(!processedTransactions.add(payload.transactionId())) return;
 
         try{
             switch (payload.type()){

@@ -9,14 +9,24 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 10
+      properties:
+        enable.idempotency: true
+        delivery.timeout.ms: 10000
+        linger.ms: 5
+        batch.size: 32768
+
     consumer:
       group-id: transaction-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: '*'
         spring.json.value.default.type: com.leumas.transaction.kafka.event.TransactionProcessedEvent
         spring.json.use.type.headers: false
+      auto-offset-reset: latest
 
 server:
   port:

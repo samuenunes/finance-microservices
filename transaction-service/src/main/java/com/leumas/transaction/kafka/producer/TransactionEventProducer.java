@@ -23,29 +23,5 @@ public class TransactionEventProducer {
         log.info("Publishing created transaction {}", tx.getId());
         kafkaTemplate.send(TOPIC, tx.getId().toString(), TransactionCreatedEvent.from(tx));
     }
-
-    public void publishCompleted(Transaction tx, BigDecimal balanceAfter) {
-        Map<String,Object> payload = Map.of(
-                "eventType","TRANSACTION_COMPLETED",
-                "timestamp", Instant.now().toString(),
-                "transactionId", tx.getId().toString(),
-                "accountId", tx.getAccountId(),
-                "amount", tx.getAmount(),
-                "currency", tx.getCurrency(),
-                "balanceAfter", balanceAfter
-        );
-        kafkaTemplate.send(TOPIC, tx.getId().toString(), payload);
-    }
-
-    public void publishFailed(Transaction tx, String reason) {
-        Map<String,Object> payload = Map.of(
-                "eventType","TRANSACTION_FAILED",
-                "timestamp", Instant.now().toString(),
-                "transactionId", tx.getId().toString(),
-                "accountId", tx.getAccountId(),
-                "reason", reason
-        );
-        kafkaTemplate.send(TOPIC, tx.getId().toString(), payload);
-    }
 }
 
