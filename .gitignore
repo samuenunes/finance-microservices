@@ -1,0 +1,20 @@
+*.class
+*.jar
+*.war
+*.log
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+application-*.yml
+!application.yml
+
+# Docker
+*.env
+*.swp
+
+# IDEs
+.idea/
+*.iml
+*.vscode/

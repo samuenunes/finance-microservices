@@ -1,0 +1,133 @@
+  version: '3.8'
+
+  services:
+    zookeeper:
+      image: confluentinc/cp-zookeeper:7.5.0
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+      ports:
+        - "2181:2181"
+
+    kafka:
+      image: confluentinc/cp-kafka:7.5.0
+      container_name: kafka_service
+      depends_on:
+        - zookeeper
+      ports:
+        - "9092:9092"
+      environment:
+        KAFKA_BROKER_ID: 1
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    user-postgres:
+      image: postgres:16.4
+      restart: unless-stopped
+      #container_name: postgres2
+      environment:
+        POSTGRES_USER: asdf
+        POSTGRES_PASSWORD: 123456
+        POSTGRES_DB: user_service
+      ports:
+        - '5432:5432'
+      volumes:
+        - user_data:/var/lib/postgresql/data
+
+    account-postgres:
+      image: postgres:16.4
+      restart: unless-stopped
+      environment:
+        POSTGRES_USER: asdf
+        POSTGRES_PASSWORD: 123456
+        POSTGRES_DB: account
+      ports:
+        - '5433:5432'
+      volumes:
+        - account_data:/var/lib/postgresql/data
+
+    transaction-postgres:
+      image: postgres:16.4
+      restart: unless-stopped
+      environment:
+        POSTGRES_USER: asdf
+        POSTGRES_PASSWORD: 123456
+        POSTGRES_DB: transaction
+      ports:
+        - '5434:5432'
+      volumes:
+        - transaction_data:/var/lib/postgresql/data
+
+    mongodb:
+      image: mongo:6.0
+      ports:
+        - "27017:27017"
+      volumes:
+        - mongo-data:/data/db
+
+    # OpenTelemetry Collector
+#    otel-collector:
+#      image: otel/opentelemetry-collector:0.97.0
+#      command: ["--config=/etc/otel-collector-config.yaml"]
+#      volumes:
+#        - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+#      ports:
+#        - "4317:4317"   # gRPC receiver
+#        - "4318:4318"   # HTTP receiver
+#      depends_on:
+#        - jaeger
+#        - prometheus
+#        - loki
+#
+#    # Jaeger para tracing distribuído
+#    jaeger:
+#      image: jaegertracing/all-in-one:1.58
+#      ports:
+#        - "16686:16686" # UI
+#        - "14268:14268" # Receber traces
+#        - "14250:14250"
+#
+#    # Prometheus para métricas
+#    prometheus:
+#      image: prom/prometheus:v2.51.2
+#      volumes:
+#        - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#      ports:
+#        - "9090:9090"
+#
+#    # Loki para logs centralizados
+#    loki:
+#      image: grafana/loki:2.9.3
+#      command: -config.file=/etc/loki/local-config.yaml
+#      ports:
+#        - "3100:3100"
+#
+#    # Grafana para visualização
+#    grafana:
+#      image: grafana/grafana:10.4.2
+#      ports:
+#        - "3000:3000"
+#      depends_on:
+#        - prometheus
+#        - loki
+#      environment:
+#        - GF_SECURITY_ADMIN_USER=admin
+#        - GF_SECURITY_ADMIN_PASSWORD=admin
+
+#    config-server:
+#      image: openjdk:21
+#      container_name: config-server
+#      build:
+#        context: ./config-server
+#      ports:
+#        - "8888:8888"
+#      depends_on:
+#        - mongodb
+#        - kafka
+
+  volumes:
+    mongo-data:
+    user_data:
+    account_data:
+    transaction_data:
